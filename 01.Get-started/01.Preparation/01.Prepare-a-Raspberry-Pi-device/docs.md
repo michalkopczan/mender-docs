@@ -97,15 +97,11 @@ In latest RPi versions wifi network configuration has been changed from
 plain `wpa_supplicant.conf` file in favor of using `rpi-imager` tool
 and this is the easiest way to configure wifi.
 
-It is strongly advised to use `rpi-imager` if possible as this is the
-configurator suggested by the official RPi documentation.
+It is still possible to do it from the command line in headless mode using
+the same scripts and config files as the one used by `rpi-imager`.
 
-Partial network configuration still can be performed from the command line
-in the headless mode but it is not guaranted to always work (may
-depend on country code settings).
-
-Bellow script is extracted from the `rpi-imager` backend and mimics this
-tool behavior from the command line.
+We then configure networking. Assuming you have a typical WiFi setup, change the initial three
+variables and run this code block:
 
 ```bash
 RPI_ROOT="$(awk '/media.*root(fs)?/ { print $2; }' /proc/mounts)"
@@ -113,10 +109,11 @@ RPI_ROOT="$(awk '/media.*root(fs)?/ { print $2; }' /proc/mounts)"
 
 WIFI_SSID='' # CHANGE: your WiFi name
 WIFI_PASS='' # CHANGE: your WiFi password
-
+COUNTRY='US' # CHANGE: two-letter country code, see https://en.wikipedia.org/wiki/ISO_3166-1
 UUID=$(uuid -v4)
 
 # Based on https://github.com/RPi-Distro/raspberrypi-sys-mods/blob/bookworm/usr/lib/raspberrypi-sys-mods/imager_custom
+# Above script is being used by the rpi-imager during the firs run
 
 CONNFILE="$RPI_ROOT"/etc/NetworkManager/system-connections/preconfigured.nmconnection
 
@@ -135,27 +132,18 @@ cat <<- EOF >${CONNFILE}
       addr-gen-mode=default
       method=auto
       [proxy]
-EOF
+      EOF
 
 if [ ! -z "${WIFI_PASS}" ]; then
   cat <<- EOF >>${CONNFILE}
       [wifi-security]
       key-mgmt=wpa-psk
       psk=${WIFI_PASS}
-EOF
+      EOF
 fi
-```
 
-NetworkManager will ignore nmconnection files with incorrect permissions,
-to prevent Wi-Fi credentials accidentally being world-readable. It need to be
-changed manually.
-
-```bash
-RPI_ROOT="$(awk '/media.*root(fs)?/ { print $2; }' /proc/mounts)"
-[ ! -d "$RPI_ROOT" ] && echo "ERROR: RPI root partition not found"
-
-CONNFILE="$RPI_ROOT"/etc/NetworkManager/system-connections/preconfigured.nmconnection
-
+# NetworkManager will ignore nmconnection files with incorrect permissions,
+# to prevent Wi-Fi credentials accidentally being world-readable.
 chmod 600 ${CONNFILE}
 ```
 
