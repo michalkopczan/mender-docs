@@ -160,6 +160,15 @@ to run, before it is considered hung and killed. The process will first be sent
 a SIGTERM signal, and one minute later, if it has not exited, a SIGKILL signal
 is sent. The default is 4 hours.
 
+#### RetryDownloadCount
+
+The maximum number of times that the Mender Client retries continuing a download of an Artifact
+that was interrupted e.g. by network issues.
+
+If not set, the default applies (10).
+Minimum allowed value is 1, maximum is 10,000.
+
+
 #### RetryPollCount
 
 The maximum number of tries that the Mender Client performs when contacting the Mender Server before giving up.
